@@ -7,15 +7,26 @@ dotenv.config();
 
 const app = express();
 
+// ✅ İzin verilen origin'ler
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://www.thewatchify.com",
+  "https://thewatchify.com"
+];
 
+// ✅ CORS ayarı – sadece belirli domain'lere izin ver
 app.use(cors({
-  origin: ["http://localhost:3000","https://www.thewatchify.com"],
+  origin: function (origin, callback) {
+    // origin yoksa (örneğin Postman'den geliyorsa) izin ver
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS hatası: Erişime izin verilmiyor."));
+    }
+  },
   methods: ["GET", "POST", "OPTIONS"],
   allowedHeaders: ["Content-Type"]
 }));
-
-
-// ✅ CORS Ayarı – sadece localhost:3000’e izin verir (React uygulaman)
 
 // ✅ JSON parse
 app.use(express.json());
@@ -55,12 +66,12 @@ app.post("/chat", async (req, res) => {
   }
 });
 
-// ✅ Root endpoint test için (isteğe bağlı)
+// ✅ Root endpoint test için
 app.get("/", (req, res) => {
   res.send("✅ Watchify GPT Backend Aktif!");
 });
 
-// ✅ Portu 5050 olarak ayarla (5000 çakıştığı için)
+// ✅ Port ayarı
 const PORT = 5050;
 app.listen(PORT, () => {
   console.log(`🚀 GPT sunucusu çalışıyor: http://localhost:${PORT}`);
